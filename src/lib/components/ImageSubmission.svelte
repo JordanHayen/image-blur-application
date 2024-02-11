@@ -83,7 +83,7 @@
 
 <!-- This input tag will let the user submit a png or jpeg file -->
 <!-- The input is bound to the fileList variable -->
-<input type="file" id="fileIn" accept="image/png, imge/jpeg" multiple bind:files={fileList} on:change={input}>
+<input type="file" id="fileIn" accept="image/png, image/jpeg" multiple bind:files={fileList} on:change={input}>
 <br />
 
 <!-- If a file has been submitted and the submission is not valid, render error text -->
