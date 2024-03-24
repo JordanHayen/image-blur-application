@@ -1,6 +1,7 @@
 <script lang="ts">
     import ImagePreview from "./ImagePreview.svelte";
     import BlurService from "$lib/services/blur";
+    import detector from "$lib/services/model";
 
     // This variable will store the FileList object that is returned from the file input element
     let fileList: FileList;
@@ -13,10 +14,12 @@
     // This variable will determine if the file submitted is valid (it is a png or jpeg 2048 by 2048 pixels or smaller)
     let submissionIsValid: boolean = false;
     // This instance of the BlurService class will be used to blur sections of the image
-    let blur: BlurService = new BlurService();
+    let blur: BlurService = new BlurService(27);
+    // This is a logger created through the Winston framework
+    
 
     // This function converts an image file URI to an ImageData object
-    // I borrowed this from https://stackoverflow.com/questions/17591148/converting-data-uri-to-image-data
+    // Borrowed from https://stackoverflow.com/questions/17591148/converting-data-uri-to-image-data
     function convertUriToImageData(URI: any) {
         return new Promise(function(resolve, reject) {
             var canvas = document.createElement('canvas'),
@@ -69,8 +72,25 @@
     const submit = async () => {
         // Get the current time in milliseconds
         const startTime = Date.now()
+        // Pass the imageData to the detector
+        const faceEstimation = await detector.estimateFaces(imageData);
+        // Create an array of boundix boxes from the estimation returned from the detector
+        let boundingBoxes = [];
+        for(let i = 0; i < faceEstimation.length; i++) {
+            const xMin = (faceEstimation[i].box.xMin <= imageData.width ? Math.ceil(faceEstimation[i].box.xMin) : imageData.width) >= 0 ? Math.ceil(faceEstimation[i].box.xMin) : 0;
+            const xMax = (faceEstimation[i].box.xMax <= imageData.width ? Math.ceil(faceEstimation[i].box.xMax) : imageData.width) >= 0 ? Math.ceil(faceEstimation[i].box.xMax) : 0;
+            const yMin = (faceEstimation[i].box.yMin <= imageData.height ? Math.ceil(faceEstimation[i].box.yMin) : imageData.height) >= 0 ? Math.ceil(faceEstimation[i].box.yMin) : 0;
+            const yMax = (faceEstimation[i].box.yMax <= imageData.height ? Math.ceil(faceEstimation[i].box.yMax) : imageData.height) >= 0 ? Math.ceil(faceEstimation[i].box.yMax) : 0;
+            boundingBoxes.push([ xMin, yMin, xMax, yMax ]);
+        }
+        
         // Blur a region of the image input
-        fileDisplay = blur.blurBoundingBox(imageData, 0, 0, 100, 100);
+        //fileDisplay = blur.blurBoundingBoxes(imageData, boundingBoxes);
+        //console.log(boundingBoxes[0]);
+        fileDisplay = imageData;
+        for(let i = 0; i < boundingBoxes.length; i++)
+            fileDisplay = blur.pixelateBoundingBox(fileDisplay, boundingBoxes[i][0], boundingBoxes[i][1], boundingBoxes[i][2], boundingBoxes[i][3]);
+        //fileDisplay = blur.pixelateBoundingBox(imageData, 0, 0, imageData.width - 1, imageData.height - 1);
         // Get the current time in milliseconds again
         const endTime = Date.now();
         // Log the elapsed time

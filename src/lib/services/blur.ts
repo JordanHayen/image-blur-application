@@ -1,8 +1,17 @@
 // This class contains methods to blur regions of an ImageData object
 export default class BlurService {
+    private kernelSize: number;
 
-    constructor() {
-        
+    constructor(kernelSize: number) {
+        this.kernelSize = kernelSize;
+    }
+
+    public getKernelSize(): number {
+        return this.kernelSize;
+    }
+
+    public setKernelSize(kernelSize: number) {
+        this.kernelSize = kernelSize;
     }
 
     // This method blurs a region of an ImageData object
@@ -15,7 +24,7 @@ export default class BlurService {
         // Iterate over the pixels parameter
         // For each pixel, take the average of the pixel and its neighbors in the imageData parameter, set the corresponding image in the result to the average
         for(let i = 0; i < pixels.length; i++) {
-            this.setPixel(result, pixels[i][0], pixels[i][1], this.blurPixel(imageData, pixels[i][0], pixels[i][1], 101));
+            this.setPixel(result, pixels[i][0], pixels[i][1], this.blurPixel(imageData, pixels[i][0], pixels[i][1], this.kernelSize));
         }
 
         // Return the result
@@ -34,7 +43,7 @@ export default class BlurService {
         // For each pixel, take the average of the pixel and its neighbors in the imageData parameter, set the corresponding image in the result to the average
         for(let x = x1; x < x2; x++) {
             for(let y = y1; y < y2; y++) {
-                this.setPixel(result, x, y, this.blurPixel(imageData, x, y, 21));
+                this.setPixel(result, x, y, this.blurPixel(imageData, x, y, this.kernelSize));
             }
         }
 
@@ -52,7 +61,7 @@ export default class BlurService {
         for(let i = 0; i < boxes.length; i++) {
             for(let x = boxes[i][0]; x < boxes[i][2]; x++) {
                 for(let y = boxes[i][1]; y < boxes[i][3]; y++) {
-                    this.setPixel(result, x, y, this.blurPixel(imageData, x, y, 21));
+                    this.setPixel(result, x, y, this.blurPixel(imageData, x, y, this.kernelSize));
                 }
             }
         }
@@ -93,11 +102,13 @@ export default class BlurService {
         // The red channel value of the pixel at (x,y) can be found with this formula: (y * width * 4) + (x * 4)
         // The green channel is immediately after the red channel, and the blue channel is immediately after that
         let redChannelIndex = (y * width * 4) + (x * 4);
+        let greenChannelIndex = redChannelIndex + 1;
+        let blueChannelIndex = redChannelIndex + 2;
 
         // The red, green, and blue channel values are retrieved from the ImageData object and added to the array
         rgb[0] = imageData.data[redChannelIndex];
-        rgb[1] = imageData.data[redChannelIndex + 1];
-        rgb[2] = imageData.data[redChannelIndex + 2];
+        rgb[1] = imageData.data[greenChannelIndex];
+        rgb[2] = imageData.data[blueChannelIndex];
 
         // The array is returned
         return rgb;
@@ -132,7 +143,7 @@ export default class BlurService {
         // An array to store the to result of the blur operation. This will be the rturn value
         let result: [number, number, number] = [0, 0, 0];
 
-        // The RGB values of the pixel to be blurred along with all of its neighbors in the 3x3 kernel are added to the pixelGroup array
+        // The RGB values of the pixel to be blurred along with all of its neighbors in the kernel are added to the pixelGroup array
         for(let i = -1*Math.floor(kernelSize/2); i <= Math.floor(kernelSize/2); i++) {
             for(let j = -1*Math.floor(kernelSize/2); j <= Math.floor(kernelSize/2); j++) {
                 redTotal += this.getPixel(imageData, x + i, y + j)[0];
@@ -147,6 +158,43 @@ export default class BlurService {
         result[2] = blueTotal  / (kernelSize ** 2);
 
         // Return the result array
+        return result;
+    }
+
+    // Pixelate a region of an image within a bounding box
+    // Takes the image to be blurred as an ImageData object, as well as the x and y values of the corners of the bounding box
+    // Returns the result as an ImageData object
+    public pixelateBoundingBox(imageData: ImageData, x1: number, y1: number, x2: number, y2: number): ImageData {
+        // The imageData field is duplicated. This duplicate will be modified and returned
+        let result = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+        // The x2 and y2 values are constrained to be within the bounds of the image
+        x2 = x2 > imageData.width - 1 ? imageData.width - 1 : x2;
+        y2 = y2 > imageData.height - 1 ? imageData.height - 1 : y2;
+        // These variables store the width and height of the bounding box
+        let boxWidth = x2 - x1;
+        let boxHeight = y2 - y1;
+
+        // These for loops mathematically divide the bounding box into a grid with squares the size of the kernel
+        // The iterators are set to the x and y values of the pixel in the center of each grid space
+        // Each iteration selects the center pixel of the next grid space
+        for(let x = x1 + Math.ceil(this.kernelSize / 2); x < boxWidth + x1; x+=this.kernelSize) {
+            for(let y = y1 + Math.ceil(this.kernelSize / 2); y < boxHeight + y1; y+=this.kernelSize) {
+                // The RGB values of the current pixel are selected
+                let currentPixel = this.getPixel(imageData, x, y);
+
+                // The RGB values of every pixel in the grid space are set to that of the current pixel
+                for(let i = -1*Math.floor(this.kernelSize / 2); i <= Math.floor(this.kernelSize); i++) {
+                    for(let j = -1*Math.floor(this.kernelSize / 2); j <= Math.floor(this.kernelSize); j++) {
+                        if(x + i >= x1 && y + j >= y1 && x + i <= x2 && y + j <= y2) {
+                            this.setPixel(result, x + i, y + j, currentPixel);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        // The result image is returned
         return result;
     }
 
