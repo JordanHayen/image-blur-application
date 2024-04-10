@@ -11,13 +11,17 @@
     let fileDisplay: string | ImageData = "#";
     // This variable stores the image in the form of an ImageData object
     let imageData: ImageData;
+    // This variable stores the image in the form of a Blob object
+    let imageBlob: Blob;
+    // This variable stores the created image as a string
+    let resultImage: string;
     // This variable will determine if the file submitted is valid (it is a png or jpeg 2048 by 2048 pixels or smaller)
     let submissionIsValid: boolean = false;
     // This instance of the BlurService class will be used to blur sections of the image
-    let blur: BlurService = new BlurService(27);
-    // This is a logger created through the Winston framework
-    
+    let blur: BlurService = new BlurService(13);
+    let submissionBlurred: boolean = false;
 
+    
     // This function converts an image file URI to an ImageData object
     // Borrowed from https://stackoverflow.com/questions/17591148/converting-data-uri-to-image-data
     function convertUriToImageData(URI: any) {
@@ -35,8 +39,24 @@
         });
     }
 
+    // This function converts an ImageData object to a Blob object
+    // Borrowed from https://stackoverflow.com/questions/65263758/convert-imagedata-to-blob-in-js
+    const ImageDataToBlob = function(imageData: ImageData) {
+        let w = imageData.width;
+        let h = imageData.height;
+        let canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        let ctx = canvas.getContext("2d");
+        ctx?.putImageData(imageData, 0, 0);        // synchronous
+
+        return new Promise((resolve) => {
+            canvas.toBlob(resolve); // implied image/png format
+        });
+    }
+
     // This method will run when a file is submitted
-    const input = async () => {
+    const handleInput = async () => {
         // Set the file variable to the first item in the fileList
         file = fileList[0];
 
@@ -64,12 +84,15 @@
 
         // The submission is marked as valid
         submissionIsValid = true;
+        submissionBlurred = false;
 
     }
 
     // This method runs when the blur button is pushed
     // Since the machine learning model has not yet been implemented, it uses the blur service to blur a predefined region of the image
-    const submit = async () => {
+    const handleBlur = async () => {
+        //logger.info("Image submitted");
+
         // Get the current time in milliseconds
         const startTime = Date.now()
         // Pass the imageData to the detector
@@ -83,18 +106,25 @@
             const yMax = (faceEstimation[i].box.yMax <= imageData.height ? Math.ceil(faceEstimation[i].box.yMax) : imageData.height) >= 0 ? Math.ceil(faceEstimation[i].box.yMax) : 0;
             boundingBoxes.push([ xMin, yMin, xMax, yMax ]);
         }
+
+        //logger.info(boundingBoxes.length + " faces detected");
         
         // Blur a region of the image input
-        //fileDisplay = blur.blurBoundingBoxes(imageData, boundingBoxes);
-        //console.log(boundingBoxes[0]);
         fileDisplay = imageData;
         for(let i = 0; i < boundingBoxes.length; i++)
             fileDisplay = blur.pixelateBoundingBox(fileDisplay, boundingBoxes[i][0], boundingBoxes[i][1], boundingBoxes[i][2], boundingBoxes[i][3]);
-        //fileDisplay = blur.pixelateBoundingBox(imageData, 0, 0, imageData.width - 1, imageData.height - 1);
         // Get the current time in milliseconds again
         const endTime = Date.now();
         // Log the elapsed time
         console.log("Elapsed time: " + (endTime - startTime) + "ms");
+        submissionBlurred = true;
+
+        await ImageDataToBlob(fileDisplay).then((data) => {
+            imageBlob = data as Blob;
+        })
+
+        resultImage = URL.createObjectURL(imageBlob);
+
         return;
     }
 
@@ -103,7 +133,7 @@
 
 <!-- This input tag will let the user submit a png or jpeg file -->
 <!-- The input is bound to the fileList variable -->
-<input type="file" id="fileIn" accept="image/png, image/jpeg" multiple bind:files={fileList} on:change={input}>
+<input type="file" id="fileIn" accept="image/png, image/jpeg" multiple bind:files={fileList} on:change={handleInput}>
 <br />
 
 <!-- If a file has been submitted and the submission is not valid, render error text -->
@@ -113,5 +143,9 @@
 {:else if fileList && submissionIsValid}
     <ImagePreview inputImage={fileDisplay}></ImagePreview>
     <br/>
-    <button on:click={submit}>Blur</button>
+    {#if !submissionBlurred}
+        <button on:click={handleBlur}>Blur</button>
+    {:else}
+        <a href={resultImage} download={file.name.replaceAll(".jpg", "").replaceAll(".jpeg", "").replaceAll(".png", "") + "-blurred"}><button>Download</button></a>
+    {/if}
 {/if}
