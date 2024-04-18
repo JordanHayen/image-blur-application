@@ -2,6 +2,7 @@
     import ImagePreview from "./ImagePreview.svelte";
     import BlurService from "$lib/services/blur";
     import detector from "$lib/services/model";
+    import logger from "$lib/services/logger";
 
     // This variable will store the FileList object that is returned from the file input element
     let fileList: FileList;
@@ -57,12 +58,15 @@
 
     // This method will run when a file is submitted
     const handleInput = async () => {
+        logger.info("Image submitted");
+
         // Set the file variable to the first item in the fileList
         file = fileList[0];
 
         // If the file is not a png or jpeg, send an alert warning that the image format is incorrect
         if(fileList[0].type != "image/png" && fileList[0].type != "image/jpeg") {
             submissionIsValid = false;
+            logger.error("Bad file input. Please submit an image in png or jpeg format.");
             alert("Bad file input. Please submit an image in png or jpeg format.");
             return;
         }
@@ -78,6 +82,7 @@
         // If the image is too large, send an alert warning that the image is too large
         if(imageData.height > 2048 || imageData.width > 2048) {
             submissionIsValid = false;
+            logger.error("Image too large. Please submit a 2048 by 2048 image or smaller");
             alert("Image too large. Please submit a 2048 by 2048 image or smaller");
             return;
         }
@@ -91,10 +96,8 @@
     // This method runs when the blur button is pushed
     // Since the machine learning model has not yet been implemented, it uses the blur service to blur a predefined region of the image
     const handleBlur = async () => {
-        //logger.info("Image submitted");
+        logger.info("Starting image blur");
 
-        // Get the current time in milliseconds
-        const startTime = Date.now()
         // Pass the imageData to the detector
         const faceEstimation = await detector.estimateFaces(imageData);
         // Create an array of boundix boxes from the estimation returned from the detector
@@ -107,16 +110,13 @@
             boundingBoxes.push([ xMin, yMin, xMax, yMax ]);
         }
 
-        //logger.info(boundingBoxes.length + " faces detected");
+        logger.info(boundingBoxes.length + " faces detected");
         
         // Blur a region of the image input
         fileDisplay = imageData;
         for(let i = 0; i < boundingBoxes.length; i++)
             fileDisplay = blur.pixelateBoundingBox(fileDisplay, boundingBoxes[i][0], boundingBoxes[i][1], boundingBoxes[i][2], boundingBoxes[i][3]);
-        // Get the current time in milliseconds again
-        const endTime = Date.now();
-        // Log the elapsed time
-        console.log("Elapsed time: " + (endTime - startTime) + "ms");
+        
         submissionBlurred = true;
 
         await ImageDataToBlob(fileDisplay).then((data) => {
@@ -124,6 +124,8 @@
         })
 
         resultImage = URL.createObjectURL(imageBlob);
+
+        logger.info("Image blurred");
 
         return;
     }
@@ -133,7 +135,8 @@
 
 <!-- This input tag will let the user submit a png or jpeg file -->
 <!-- The input is bound to the fileList variable -->
-<input type="file" id="fileIn" accept="image/png, image/jpeg" multiple bind:files={fileList} on:change={handleInput}>
+<button><label for="fileIn">Upload an Image</label></button>
+<input type="file" name="fileIn" id="fileIn" accept="image/png, image/jpeg" multiple bind:files={fileList} on:change={handleInput} style="width:0.1px;height:0.1px;opacity:0;overflow:hidden;position:absolute;z-index:-1;">
 <br />
 
 <!-- If a file has been submitted and the submission is not valid, render error text -->
