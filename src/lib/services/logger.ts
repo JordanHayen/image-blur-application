@@ -12,7 +12,7 @@ const createLogger = (logglyToken: string): pino.Logger => {
             transmit: {
                 send: function(level: pino.Level, logEvent: pino.LogEvent) {
                     // The fetch API is called to send the logs to the endpoint
-                    fetch(`http://logs-01.loggly.com/inputs/${logglyToken}/tag/http/`, {
+                    fetch(`https://logs-01.loggly.com/inputs/${logglyToken}/tag/http/`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
