@@ -2,7 +2,8 @@
     import ImagePreview from "./ImagePreview.svelte";
     import BlurService from "$lib/services/blur";
     import detector from "$lib/services/model";
-    import logger from "$lib/services/logger";
+    import createLogger from "$lib/services/logger";
+    //import logger from "$lib/services/logger";
 
     // This variable will store the FileList object that is returned from the file input element
     let fileList: FileList;
@@ -20,7 +21,12 @@
     let submissionIsValid: boolean = false;
     // This instance of the BlurService class will be used to blur sections of the image
     let blur: BlurService = new BlurService(13);
+    // This variable tracks whether or not the submitted image has been blurred
     let submissionBlurred: boolean = false;
+    // This variable contains the Loggly customer token, provided by +page.svelte
+    export let logglyToken;
+    // The logger is created
+    const logger = createLogger(logglyToken);
 
     
     // This function converts an image file URI to an ImageData object
