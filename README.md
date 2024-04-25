@@ -94,11 +94,11 @@
 </ol>
 <p>The following is a low fidelity wireframe that I developed for this application's user interface:</p>
 <img src="static/low fidelity wireframe.png">
-<p>Since the application only has two screens the user interface is very simple</p>
+<p>Since the application only has two screens the user interface is very simple.</p>
 
 <h2>Challenges</h2>
 <p>As stated previously, I was unable to use Mask RCNN as I had originally intended. I solved this by using Media Pipe instead.</p>
-<p>When I first designed this project I planned to use a convolutional blur algorithm to obscure the faces. This ended up not performing well and not obscuring the faces completely. This was solved by switching to a pixelation effect which completely obscures the faces and runs faster.</p>
+<p>When I first designed this project I planned to use a convolutional blur algorithm to obscure the faces. This ended up not performing well and not obscuring the faces completely. This was solved by switching to a pixelation effect which completely obscures the faces and runs much faster.</p>
 
 <h2>Outstanding Issues</h2>
 <p>There are currently no outstanding issues.</p>
