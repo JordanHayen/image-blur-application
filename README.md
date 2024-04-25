@@ -17,3 +17,54 @@
 <p>In addition, the application needed to have a fast response time</p>
 <p>The application should take no more than two seconds for the image to be blurred after the user has clicked the blur button</p>
 <p>In order to keep track of response time, logging standards should be followed</p>
+
+<h3>Technologies</h3>
+<p>In order to support the above requirements, several technologies were used</p>
+<p>These include the following:</p>
+<table>
+  <tr>
+    <th>Technology</th>
+    <th>Version</th>
+    <th>Purpose</th>
+  </tr>
+  <tr>
+    <td>TypeScript</td>
+    <td>4.1.5</td>
+    <td>Web Application Development</td>
+  </tr>
+  <tr>
+    <td>Node.js</td>
+    <td>18.13.0</td>
+    <td>Javascript server runtime</td>
+  </tr>
+  <tr>
+    <td>SvelteKit</td>
+    <td>1.25.1</td>
+    <td>Web Application Development</td>
+  </tr>
+  <tr>
+    <td>TensorFlowJS</td>
+    <td>2.11.0</td>
+    <td>Runtime for Media Pipe Face Detection</td>
+  </tr>
+  <tr>
+    <td>Media Pipe Face Detection</td>
+    <td>1.0.2</td>
+    <td>Facial recognition</td>
+  </tr>
+  <tr>
+    <td>Git</td>
+    <td>2.38.0</td>
+    <td>Web Application Development</td>
+  </tr>
+  <tr>
+    <td>GitHub</td>
+    <td></td>
+    <td>Web Application Development</td>
+  </tr>
+  <tr>
+    <td>Heroku</td>
+    <td></td>
+    <td>Web Application Development</td>
+  </tr>
+</table>
