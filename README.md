@@ -82,4 +82,5 @@
 <p>I had initially intended to train Mask RCNN on a custom dataset for the face detector, but I ended up choosing Media Pipe because my implementation of MASK RCNN was not consistent enough</p>
 <p>I chose Heroku for deployment because it can be easily integrated with GitHub for continuous delivery and Loggly for log aggregation</p>
 
-<h2></h2>
+<h2>Technical Approach</h2>
+
