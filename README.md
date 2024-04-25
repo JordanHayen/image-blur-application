@@ -8,3 +8,6 @@
   <li>Download the resulting image</li>
 </ul>
 
+<img src="/static/blur example.png">
+
+<h2></h2>
