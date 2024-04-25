@@ -18,7 +18,7 @@
 <p>The application should take no more than two seconds for the image to be blurred after the user has clicked the blur button</p>
 <p>In order to keep track of response time, logging standards should be followed</p>
 
-<h3>Technologies</h3>
+<h2>Technologies</h2>
 <p>In order to support the above requirements, several technologies were used</p>
 <p>These include the following:</p>
 <table>
@@ -55,16 +55,31 @@
   <tr>
     <td>Git</td>
     <td>2.38.0</td>
-    <td>Web Application Development</td>
+    <td>Version control</td>
   </tr>
   <tr>
     <td>GitHub</td>
     <td></td>
-    <td>Web Application Development</td>
+    <td>Version control, continuous delivery</td>
   </tr>
   <tr>
     <td>Heroku</td>
     <td></td>
-    <td>Web Application Development</td>
+    <td>Web application hosting, continuous delivery</td>
+  </tr>
+  <tr>
+    <td>SolarWinds Loggly</td>
+    <td></td>
+    <td>Log aggregation</td>
+  </tr>
+  <tr>
+    <td>UpTime Robot</td>
+    <td></td>
+    <td>Web application monitoring</td>
   </tr>
 </table>
+<p>I selected NodeJS, TypeScript, and SvelteKit for the web application because they are all technologies which I enjoy using</p>
+<p>I had initially intended to train Mask RCNN on a custom dataset for the face detector, but I ended up choosing Media Pipe because my implementation of MASK RCNN was not consistent enough</p>
+<p>I chose Heroku for deployment because it can be easily integrated with GitHub for continuous delivery and Loggly for log aggregation</p>
+
+<h2></h2>
